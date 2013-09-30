@@ -69,8 +69,6 @@ class View
             offsets:offsets
         }
 
-    getLayout: (frame, {firstchild, lastchild}) -> stdLayout
-
     update: (x, y, max_width, max_height) ->
         @root.layout.measure.call(@root, max_width, max_height)
         @root.layout.position.call(@root, x, y)
@@ -87,7 +85,7 @@ class View
         node = rec(@root)
         return unless node?
         best_dist = Infinity
-        index = 0
+        index = null
         for child in node.children
             continue unless child.offsets? and child.base? and child.visible
             relx = x - child.x
@@ -114,9 +112,101 @@ class View
         return unless frame?
         frame.layout.drawSelection.call(frame, this, start, stop)
 
+    getLayout: (frame, {firstchild, lastchild}) ->
+        return columnLayout if frame.node.label == 'root'
+        return lineLayout if frame.node.label == 'p'
+        return rowLayout
+
 window.View = View
 
-stdLayout = {
+lineLayout = {
+    measure: (max_width, max_height) ->
+        @visible = false
+        for child in @children
+            child.layout.measure.call(child, max_width - 8, max_height)
+        @lines = breakLines @children, max_width - 8
+        @helpers = []
+        @width = 10
+        @height = 0
+        for line in @lines
+            line_width  = 0
+            line_height = 0
+            for child in line
+                line_width += child.width
+                line_height = Math.max(line_height, child.height)
+            @width = Math.max(@width, line_width)
+            @height += line_height
+            @helpers.push {width: line_width, height: line_height}
+        @height = Math.max(10, @height)
+        @width += 8
+        @height += 8
+    position: (@x, @y) ->
+        @visible = true
+        yoff = 0
+        for i in [0...@lines.length]
+            line = @lines[i]
+            meas = @helpers[i]
+            meas.y = 4+@y+yoff
+            xoff = 0
+            for child in line
+                child.layout.position.call(child, @x+4+xoff, 4+@y+yoff)
+                xoff += child.width
+            yoff += meas.height
+
+    draw: (view) ->
+        view.ctx.strokeRect(@x, @y, @width, @height)
+    drawGlue: (view, frame) ->
+    drawText: (view, frame) ->
+        view.ctx.fillText frame.text, frame.x, frame.y+view.ctx.font_height
+    drawSelection: (view, start, stop) ->
+        view.ctx.strokeRect(@x+4, @y+4, @width-8, @height-8)
+        x0 = null
+        x1 = null
+        for i in [0...@lines.length]
+            line = @lines[i]
+            meas = @helpers[i]
+            for child in line when child.base?
+                x0 ?= getOffset(child, start)
+                x1 ?= getOffset(child, stop)
+            continue unless x0? and x1?
+            view.ctx.strokeRect(x0, meas.y, x1-x0, meas.height)
+}
+
+columnLayout = {
+    measure: (max_width, max_height) ->
+        @visible = false
+        offset = 0
+        @width = 10
+        for child in @children
+            child.layout.measure.call(child, max_width, max_height)
+            offset += child.height
+            @width = Math.max(@width, child.width)
+        @height = Math.max(offset, 10)
+        @width  += 8
+        @height += 8
+    position: (@x, @y) ->
+        @visible = true
+        offset = 0
+        for child in @children
+            child.layout.position.call(child, @x+4, 4+@y+offset)
+            offset += child.height
+    draw: (view) ->
+        view.ctx.strokeRect(@x, @y, @width, @height)
+    drawGlue: (view, frame) ->
+    drawText: (view, frame) ->
+        view.ctx.fillText frame.text, frame.x, frame.y+view.ctx.font_height
+    drawSelection: (view, start, stop) ->
+        view.ctx.strokeRect(@x+4, @y+4, @width-8, @height-8)
+        x0 = null
+        x1 = null
+        for child in @children when child.base?
+            x0 ?= getOffset(child, start)
+            x1 ?= getOffset(child, stop)
+        return unless x0? and x1?
+        view.ctx.strokeRect(x0, @y+4, x1-x0, @height-8)
+}
+
+rowLayout = {
     measure: (max_width, max_height) ->
         @visible = false
         offset = 0

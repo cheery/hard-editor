@@ -67,7 +67,9 @@ $ ->
 
     draw = () ->
         ctx.clearRect 0, 0, canvas.width, canvas.height
-        view.update(10, 10, canvas.width, canvas.height)
+        max_width = canvas.width * (0.5+0.25*Math.cos(Date.now() / 2000))
+        ctx.fillRect 10+max_width, 0, 1, canvas.height
+        view.update(10, 10, max_width, canvas.height)
         view.draw()
         view.drawSelection selection
 

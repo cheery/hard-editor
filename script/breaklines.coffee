@@ -42,6 +42,8 @@ window.breakLines = (nodes, max_width) ->
         cutpoints.push indices[cutpoint]
         cutpoint = solution[cutpoint]
 
+    return [nodes] if cutpoints.length == 0
+
     lines = []
     start = 0
     for i in [cutpoints.length-1..0]
@@ -49,5 +51,6 @@ window.breakLines = (nodes, max_width) ->
         lines.push nodes[start...end]
         start = end + 1
     lines.push nodes[start...]
+
     return lines
 

@@ -6,6 +6,6 @@ This project implements a custom document object model and renderer with simple 
 
 `script/view.coffee` provides a view, which renders a document described above, also allows picking and highlighting of a selection from the document. The renderer assigns set of layouting commands for every frame it creates. Frames have 1:1 association with document nodes, but they're entirely contained within the renderer, only accessed by the layouter.
 
-`script/breaklines.coffee` provides line wrapping code, which is compatible with the layouting techniques I use in the renderer. This far I only have a stupid row layouter, so the function of breakLines isn't visible in the demonstration.
+`script/breaklines.coffee` provides line wrapping code, which is compatible with the layouting techniques I use in the renderer.
 
-Demonstration can be found from http://boxbase.org/hard-editor/ It still lacks a proper layout engine and editor controller, so it's not useful for everyone yet.
+Demonstration can be found from http://boxbase.org/hard-editor/ It still lacks a better layout engine and editor controller, so it's not useful for everyone yet.
