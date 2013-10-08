@@ -8,4 +8,4 @@ This project implements a custom document object model and renderer with simple 
 
 `script/breaklines.coffee` provides line wrapping code, which is compatible with the layouting techniques I use in the renderer.
 
-Demonstration can be found from http://boxbase.org/hard-editor/ It still lacks a better layout engine and editor controller, so it's not useful for everyone yet.
+Demonstration can be found from http://boxbase.org/hard-editor/ It still lacks a better editor controller, so it's not useful for everyone yet.

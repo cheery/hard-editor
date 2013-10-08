@@ -12,6 +12,7 @@ class Document
 class Node
     constructor: (@label, @children, @length) ->
         @parent = null
+        @children = adopt @children, this
 
     slice: (start, stop) -> split(@children, start, stop)[1]
     change: (start, stop, inserted) ->
@@ -48,9 +49,9 @@ class Node
             current = current.parent
         return current
 
-window.mkdoc = (root) -> new Document(root)
+window.createDocument = (root) -> new Document(root)
 
-window.mknod = (label, children) ->
+window.createNode = (label, children) ->
     children ?= []
     length = getLength(children)
     new Node(label, children, length)
@@ -74,6 +75,8 @@ getLength = (children) ->
         else
             offset += 1
     return offset
+
+window.getChildrenLength = getLength
 
 split = (children, indices...) ->
     chop = (children, index) ->
