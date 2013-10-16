@@ -11,7 +11,9 @@ window.flowLayout = (element, max_width) ->
                 when 'fixed', 'glue' then frames.push frame
                 when 'inline'
                     element.inline.push frame
+                    frames.push {type:'mark', width:0, height:0, offsets:[0], index:frame.index, parent:element}
                     visit frame
+                    frames.push {type:'mark', width:0, height:0, offsets:[0], index:frame.index+1, parent:element}
                 else
                     frames.push {type:'glue', width:0, height:0}
                     frames.push frame
@@ -142,7 +144,8 @@ window.getKX = (element, lines, index) ->
     trail = null
     for k in [0...lines.length]
         line = lines[k]
-        for frame in line when frame.parent == element and frame.index?
+        for frame in line
+            continue unless frame.parent == element and frame.index?
             offsets = getOffsets(frame)
             if index < frame.index
                 return {k, x:offsets[0]+frame.x}
@@ -152,6 +155,7 @@ window.getKX = (element, lines, index) ->
     return trail
 
 window.drawFlowSelection = (ctx, element, start, stop) ->
+    return unless element.type == 'inline' or element.type == 'flow'
     selection = (x0, x1, y, height) ->
         x1 += 1 if x0 == x1
         ctx.fillRect x0, y, x1-x0, height

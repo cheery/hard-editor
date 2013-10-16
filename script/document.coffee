@@ -13,6 +13,7 @@ class Node
     constructor: (@label, @children, @length) ->
         @parent = null
         @children = adopt @children, this
+        @length = getLength(@children)
 
     slice: (start, stop) -> split(@children, start, stop)[1]
     change: (start, stop, inserted) ->
@@ -25,6 +26,17 @@ class Node
         @length = getLength(@children)
         @getDocument()?.onChange @, {start, stop, inserted, deleted}
         return deleted
+
+    indexOf: (target) ->
+        index = 0
+        for node in @children
+            if typeof node == 'string'
+                index += node.length
+            else if target == node
+                return index
+            else
+                index += 1
+        return -1
 
     adopt: (new_parent) ->
         node = @
@@ -84,16 +96,16 @@ split = (children, indices...) ->
         for i in [0...children.length]
             child = children[i]
             if typeof child == 'string'
-                offset += child.length
+                length = child.length
             else
-                offset += 1
+                length = 1
             if offset == index
                 return [
                     children.slice(0, i)
                     children.slice(i)
                 ]
-            if index < offset + length
-                cut = index - offset
+            cut = index - offset
+            if 0 < cut and cut < length
                 lhs = children.slice(0, i)
                 rhs = children.slice(i+1)
                 lhs.splice i, 0, child.slice(0, cut)
